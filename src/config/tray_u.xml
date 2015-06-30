@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<tray>
+ <tray-item entryUniqueId="100000">
+  <type>web</type>
+  <name>DBINS</name>
+  <command><![CDATA[http://10.10.17.131]]></command>
+ </tray-item>
+ 
+ <tray-item entryUniqueId="100001">
+  <type>web</type>
+  <name>EP개발</name>
+  <command><![CDATA[http://10.10.21.40]]></command>
+ </tray-item>
+ 
+ <tray-item entryUniqueId="100002">
+  <type>web</type>
+  <name>(외부)EP개발</name>
+  <command><![CDATA[http://dev.mdongbu.com]]></command>
+ </tray-item>
+ 
+ <tray-item entryUniqueId="100003">
+  <type>web</type>
+  <name>EP운영</name>
+  <command><![CDATA[http://10.10.25.40]]></command>
+ </tray-item>
+ 
+ <tray-item entryUniqueId="100004">
+  <type>web</type>
+  <name>(외부)EP운영</name>
+  <command><![CDATA[http://prod.mdongbu.com]]></command>
+ </tray-item>
+ 
+ <tray-item entryUniqueId="100005">
+  <type>web</type>
+  <name>EAM 개발 </name>
+  <command><![CDATA[http://10.10.21.70:9089/sem]]></command>
+ </tray-item>
+ 
+ <tray-item entryUniqueId="100006">
+  <type>web</type>
+  <name>디플로이매니저</name>
+  <command><![CDATA[http://10.10.50.33:8088/DeployManager/dinle/tcm/comm/util/deploy/DeployMngt.jsp?catId=ADS&pjtId=EPS]]></command>
+ </tray-item>
+ 
+ <tray-item entryUniqueId="100007">
+  <type>app</type>
+  <name>서버 기본정보</name>
+  <command><![CDATA[C:/Program Files/EditPlus 3/editplus.exe,D:/02.자료/01.기본정보/서버 기본정보.txt]]></command>
+ </tray-item>
+ 
+ <tray-item entryUniqueId="100008">
+  <type>app</type>
+  <name>포틀렛 기본정보</name>
+  <command><![CDATA[C:/Program Files/Microsoft Office/Office12/EXCEL.EXE,Z:/03.C 구축/03.개발문서/0303.포틀렛 정보/포틀릿 생성 정보20120802v.1.xls]]></command>
+ </tray-item>
+ 
+ <tray-item entryUniqueId="100008">
+  <type>app</type>
+  <name>22222222222222</name>
+  <command><![CDATA[C:/Program Files/Microsoft Office/Office12/EXCEL.EXE,Z:/03.C 구축/03.개발문서/0303.포틀렛 정보/포틀릿 생성 정보20120802v.1.xls]]></command>
+ </tray-item>
+</tray>
