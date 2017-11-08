@@ -4,8 +4,8 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import com.quick.tray.TrayKeyConstants;
 import com.quick.tray.config.TrayConfig;
+import com.quick.tray.constants.TrayKeyConstants;
 import com.quick.tray.entity.DataEntity;
 
 public class ResourceControl {

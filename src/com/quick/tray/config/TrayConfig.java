@@ -22,7 +22,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.quick.tray.TrayKeyConstants;
+import com.quick.tray.constants.TrayKeyConstants;
 import com.quick.util.FileUtil;
 
 

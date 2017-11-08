@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.quick.tray.TrayKeyConstants;
 import com.quick.tray.config.TrayConfig;
+import com.quick.tray.constants.TrayKeyConstants;
 import com.quick.util.XCM;
 
 public class TrayAdInfo implements Runnable {

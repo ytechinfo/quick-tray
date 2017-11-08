@@ -15,8 +15,10 @@ public interface TrayConfigurationConstants {
 	public final static String DEFAULT_XML_PATH = "config/";
 	public final static String CONFIG_FILE_NAME = "tray_config.properties";
 	public final static String TRAY_USER_FILE_NAME = "tray_u.xml";
+	public final static String TRAY_APP_FILE_NAME = "tray_app_config.xml";
 	
 	public final static String TRAY_DATA_EXT = "xml";
 	public final static String DELIMETER = "|";
+	public final static String DELIMETER3CHAR= ";|;";
 	
 }

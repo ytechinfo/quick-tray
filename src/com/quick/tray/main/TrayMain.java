@@ -29,13 +29,16 @@ import org.eclipse.swt.widgets.Tray;
 import org.eclipse.swt.widgets.TrayItem;
 import org.eclipse.swt.widgets.Widget;
 
-import com.quick.tray.NewTrayInfoInsertForm;
-import com.quick.tray.TrayKeyConstants;
 import com.quick.tray.ad.TrayAdInfo;
+import com.quick.tray.bean.AppConfigBean;
 import com.quick.tray.config.TrayConfig;
 import com.quick.tray.config.TrayConfigurationConstants;
+import com.quick.tray.constants.TrayKeyConstants;
+import com.quick.tray.data.TrayAppDataControl;
 import com.quick.tray.data.TrayUserDataControl;
 import com.quick.tray.entity.DataEntity;
+import com.quick.tray.form.TrayInfoInsertForm;
+import com.quick.tray.form.TrayInsertMenu;
 import com.quick.tray.lang.ResourceControl;
 import com.quick.util.StringUtil;
 import com.quick.util.TrayUtil;
@@ -46,6 +49,8 @@ public class TrayMain {
 	private DataEntity TRAY_COFNIG = TrayConfig.getInstance().getProperties();
 	Display display=null;
 	Menu trayMenu = null;
+	final private TrayInsertMenu trayInsertMenu = new TrayInsertMenu(); 
+	
 	public static void main(String[] args){
 		try{
 			new Thread(new TrayAdInfo()).start();
@@ -209,35 +214,49 @@ public class TrayMain {
 			DataEntity clickEnt= TrayUserDataControl.newIntance().getItemList().get(Integer.parseInt(menuIdx));
 			String type= clickEnt.getString(TrayKeyConstants.MENU_TYPE);
 			String exeCmd= clickEnt.getString(TrayKeyConstants.MENU_COMMAND);
+			AppConfigBean appConfiBean = TrayAppDataControl.newIntance().getItemMap(type);
+			
 			errMsg.append(ResourceControl.getInstance().getResource().getString("menu_name", "Menu : "))
 			.append(clickEnt.getString(TrayKeyConstants.MENU_NM))
 			.append("\n")
 			.append(ResourceControl.getInstance().getResource().getString("menu_path", "Menu Path :"))
 			.append(exeCmd)
+			.append("\n")
+			.append(appConfiBean.toString())
 			.append("\n");
+			
+			
 			
 			try {
 				final Runtime rt= Runtime.getRuntime();
 				
-				String cmdType = "tray"+"."+TrayKeyConstants.MENU_COMMAND+"."+type;
-				if(TRAY_COFNIG.containsKey(cmdType)){
-					String [] exeCommandArr= new String[2];
-					exeCommandArr[0] = TRAY_COFNIG.getString(cmdType);
-					exeCommandArr[1] = exeCmd;
-					rt.exec(exeCommandArr);
-				}else{
-					if("web".equals(type)){
-						if(exeCmd.indexOf("http://") < 0){
-							exeCmd = "http://"+exeCmd ;
-						}
+				if("web".equals(appConfiBean.getType())){
+					if(exeCmd.startsWith("http://")){
+						exeCmd = "http://"+exeCmd ;
+					}
+					try{
+						System.out.println(appConfiBean.getCommand()+" : "+exeCmd);
+						
+						String [] exeCommandArr= new String[2];
+						exeCommandArr[0] = appConfiBean.getCommand();
+						exeCommandArr[1] = exeCmd;
+						rt.exec(exeCommandArr);
+						
+						
+						
+					}catch(Exception e){
 						Desktop.getDesktop().browse(new URI(exeCmd));
-					}else{
-						String [] exeCommandArr = StringUtil.split(exeCmd, TrayConfigurationConstants.DELIMETER);
-						if(exeCommandArr.length > 1){
-							rt.exec(exeCommandArr);
-						}else{
-							Desktop.getDesktop().open(new File(exeCmd));
-						}
+					}
+				}else{
+					if(appConfiBean.getCommand()!=null && !"".equals(appConfiBean.getCommand())){
+						exeCmd = appConfiBean.getCommand()+TrayConfigurationConstants.DELIMETER+exeCmd;
+					}
+					String [] exeCommandArr = StringUtil.split(exeCmd, TrayConfigurationConstants.DELIMETER);
+					
+					try{
+						rt.exec(exeCommandArr);
+					}catch(Exception e){
+						Desktop.getDesktop().open(new File(exeCmd));
 					}
 				}
 			} catch (Exception e1) {
@@ -247,7 +266,7 @@ public class TrayMain {
 	}
 	
 	public void inFormView(){
-		NewTrayInfoInsertForm tii = new NewTrayInfoInsertForm();  
-		tii.open(display);
+		final TrayInfoInsertForm tii = new TrayInfoInsertForm(); 
+		tii.open(display, trayInsertMenu);
 	}
 }

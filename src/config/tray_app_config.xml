@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<tray>
+ <app-item entryUniqueId="100000">
+  <name>ie</name>
+  <type>web</type>
+  <command><![CDATA[C:/Program Files/Internet Explorer/iexplore.exe]]></command>
+ </app-item>
+ 
+ <app-item entryUniqueId="100001">
+  <name>chrome</name>
+  <type>web</type>
+  <command><![CDATA[C:/Program Files/Google/Chrome/Application/chrome.exe]]></command>
+ </app-item>
+</tray>

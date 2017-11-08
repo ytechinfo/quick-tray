@@ -8,7 +8,7 @@ CLASS_NAME : NewTrayInfoInsertForm
 프로그램 생성정보 :  2013-02-15 / ytkim
 프로그램 수정정보 :    
 */
-package com.quick.tray;
+package com.quick.tray.form;
 
 import java.awt.Desktop;
 import java.io.File;
@@ -18,8 +18,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
-
-import javax.swing.JOptionPane;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
@@ -53,16 +51,20 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import com.quick.tray.ad.TrayAdInfo;
+import com.quick.tray.bean.AppConfigBean;
 import com.quick.tray.config.TrayConfig;
 import com.quick.tray.config.TrayConfigurationConstants;
+import com.quick.tray.constants.TrayKeyConstants;
+import com.quick.tray.data.TrayAppDataControl;
 import com.quick.tray.data.TrayUserDataControl;
 import com.quick.tray.entity.DataEntity;
 import com.quick.tray.lang.ResourceControl;
 import com.quick.tray.main.TrayMain;
 import com.quick.tray.ui.UiUtil;
+import com.quick.tray.utils.TrayUtils;
 import com.quick.util.TrayUtil;
 
-public class NewTrayInfoInsertForm {
+public class TrayInfoInsertForm {
     FileDialog g_fileDialog;  
   
     File g_file; //  
@@ -103,19 +105,15 @@ public class NewTrayInfoInsertForm {
     Composite processComposite = null;
     Image g_image = null;
     
-    final String[] typeArr =TrayConfig.getInstance().getProperties().split("tray.process.type",",");
-
     boolean sortFlag = false;
     
-    java.util.List<Integer> dataSortIndex = new ArrayList<Integer>();
-    
     final private DataEntity  resource = ResourceControl.getInstance().getResource();
-    		
-
+    
 	/** 
      * shell 을 만들고 shell을 반환한다. 
+	 * @param trayInsertMenu 
      */  
-    public Shell open(Display display) { 
+    public Shell open(Display display, TrayInsertMenu trayInsertMenu) { 
     	
     	Shell [] allShell = display.getShells();
     	String classNm = this.getClass().getName();
@@ -136,7 +134,8 @@ public class NewTrayInfoInsertForm {
     	
     	final Shell g_shell = new Shell(display ,SWT.CLOSE);
     	
-    	new TrayInsertMenu().menuGrid(display,g_shell , this);
+    	trayInsertMenu.menuGrid(display,g_shell , this);
+    	
     	g_shell.setData(this.getClass().getName());
     	
     	g_shell.setText(resource.getString("menu_mgmt", "Menu Setting")); 
@@ -341,8 +340,8 @@ public class NewTrayInfoInsertForm {
  	    data.left = labelTextLeft;
  	    label.setLayoutData(data);
     	
- 	 //타입
-    	combo = UiUtil.createCombo(topChildRight, typeArr, SWT.LEFT|SWT.READ_ONLY);
+ 	    //타입
+    	combo = UiUtil.createCombo(topChildRight, TrayAppDataControl.newIntance().getAppType(), SWT.LEFT|SWT.READ_ONLY);
     	combo.setLayoutData(UiUtil.getFormData(new FormAttachment(label, inputFormTopPadding)
  	    , labelTextLeft
  	    , comboListW
@@ -352,13 +351,17 @@ public class NewTrayInfoInsertForm {
     	combo.addSelectionListener(new SelectionAdapter() {
     		@Override
     		public void widgetSelected(SelectionEvent e) {
-    			String comboTxt = combo.getItem(combo.getSelectionIndex());
+    			int selectIdx =combo.getSelectionIndex();
+    			
+    			AppConfigBean appConfigBean = TrayAppDataControl.newIntance().getItemList().get(selectIdx);
+    			
+    			String comboTxt = appConfigBean.getType();
     			
     			if(selectComboTxtStr.equals(comboTxt))return ; 
     			//프로세스 라벨
     			comboSelectProcess(comboTxt);
     			
-    			selectComboTxtStr = comboTxt;
+    			selectComboTxtStr = appConfigBean.getEntryId();
     		};
     	});
 		
@@ -430,8 +433,6 @@ public class NewTrayInfoInsertForm {
 	    		selectUserList.setItem(sIdx-1, item[sIdx]);
 	    		selectUserList.setItem(sIdx, item[sIdx-1]);
 	    		selectUserList.setSelection(sIdx-1);
-	    		
-	    		Collections.swap(dataSortIndex,sIdx,sIdx-1);
 	    	}
     	});
 	}
@@ -463,8 +464,6 @@ public class NewTrayInfoInsertForm {
 	    		selectUserList.setItem(sIdx+1, item[sIdx]);
 	    		selectUserList.setItem(sIdx, item[sIdx+1]);
 	    		selectUserList.setSelection(sIdx+1);
-	    		
-	    		Collections.swap(dataSortIndex,sIdx,sIdx+1);
 	    	}
     	});
 	}
@@ -481,17 +480,17 @@ public class NewTrayInfoInsertForm {
     	
     	saveBtn.addSelectionListener(new SelectionAdapter() {
 	    	public void widgetSelected(SelectionEvent event) {
-		    	String comboTxt = combo.getItem(combo.getSelectionIndex());
+		    	
 		    	String tmpProcess = "";
 		    	DataEntity inInfo = new DataEntity();
 		    	
 		    	int sIdx = selectUserList.getSelectionIndex();
 		    	
 		    	if(sIdx >-1){
-					inInfo = TrayUserDataControl.newIntance().getItemList().get(dataSortIndex.get(sIdx));
+					inInfo = getSelectItem(sIdx);
 				}
 		    	
-		    	comboTxt=getComboType(comboTxt);
+		    	String comboTxt=getComboTypeInfo();
 		    	
 		    	if("web".equals(comboTxt)){
 		    		tmpProcess=processTxt.getText();
@@ -517,7 +516,7 @@ public class NewTrayInfoInsertForm {
 		    	}
 		    	
 		    	inInfo.put(TrayKeyConstants.ITEM_NAME, name);
-		    	inInfo.put(TrayKeyConstants.ITEM_TYPE, combo.getItem(combo.getSelectionIndex()));
+		    	inInfo.put(TrayKeyConstants.ITEM_TYPE, getComboTypeInfo("id"));
 		    	inInfo.put(TrayKeyConstants.ITEM_COMMAND, tmpProcess);
 		    	
 		    	try {
@@ -528,7 +527,6 @@ public class NewTrayInfoInsertForm {
 			    		TrayUserDataControl.newIntance().createItem(inInfo );
 			    		int itenLen = selectUserList.getItems().length;
 			    		selectUserList.add(name,itenLen);
-			    		dataSortIndex.add(itenLen);
 					}
 				
 					TrayUserDataControl.newIntance().store();
@@ -555,30 +553,16 @@ public class NewTrayInfoInsertForm {
 	    	public void widgetSelected(SelectionEvent event) {
 	
 		    	int sIdx= selectUserList.getSelectionIndex();
-	    		
+		    	
+		    	
 	    		if(sIdx> -1){
-			    	DataEntity delEntity = TrayUserDataControl.newIntance().getItemList().get(dataSortIndex.get(sIdx));
+			    	DataEntity delEntity = getSelectItem(sIdx);
 		
 			    	try {
 			    		TrayUserDataControl.newIntance().deleteItem(delEntity.getString(TrayKeyConstants.ENTRY_ATTR_ID));
 						TrayUserDataControl.newIntance().store();
 						
 						selectUserList.remove(sIdx);
-						int len = dataSortIndex.size(); 
-						int val = 0;
-						
-						ArrayList<Integer> tmpData = new ArrayList<Integer>();
-						for (int i = 0; i < len; i++) {
-							val = dataSortIndex.get(i);
-							
-							if( val > sIdx){
-								tmpData.add(val-1);
-							}else{
-								tmpData.add(val);
-							}
-						}
-						dataSortIndex=tmpData;
-						dataSortIndex.remove(sIdx);
 						
 						int itemCnt = selectUserList.getItemCount();
 						
@@ -629,7 +613,14 @@ public class NewTrayInfoInsertForm {
 	    	public void widgetSelected(SelectionEvent event) {
 				try {
 					if(sortFlag){
-						TrayUserDataControl.newIntance().dataSort(dataSortIndex);
+						java.util.List<String> entryKeyList = new ArrayList<String>();
+						
+						int len = selectUserList.getItemCount();
+						for(int i =0 ; i <len ;i++){
+							entryKeyList.add(getSelectItem(i).getString(TrayKeyConstants.ENTRY_ATTR_ID));
+						}
+						
+						TrayUserDataControl.newIntance().dataSort(entryKeyList);
 						TrayUserDataControl.newIntance().store();
 					}
 				} catch (IOException e) {
@@ -699,6 +690,12 @@ public class NewTrayInfoInsertForm {
 		});
 	}
     
+    public DataEntity getSelectItem(int sIdx){
+    	String item = selectUserList.getItem(sIdx);
+		String key = TrayUtils.split(item,TrayConfigurationConstants.DELIMETER3CHAR)[1];
+		
+		return TrayUserDataControl.newIntance().getItemMap(key);
+    }
     /**
      * 정보 선택시.
      * @param topChildLeft
@@ -707,8 +704,8 @@ public class NewTrayInfoInsertForm {
     	int sIdx = selectUserList.getSelectionIndex();
 		if(sIdx >-1){
 			
-			DataEntity tmpEntity = TrayUserDataControl.newIntance().getItemList().get(dataSortIndex.get(sIdx));
-			
+    		DataEntity tmpEntity = getSelectItem(sIdx);
+    		
 			String type = tmpEntity.getString(TrayKeyConstants.ITEM_TYPE);
 			
 			nameTxt.setText(tmpEntity.getString(TrayKeyConstants.ITEM_NAME));
@@ -731,7 +728,7 @@ public class NewTrayInfoInsertForm {
 				comboSelectProcess(type);
 			}
 			
-			type=getComboType(type);
+			type=getComboTypeInfo();
 			
 			if("web".equals(type)){
 				if(selectProcessList!=null) selectProcessList.removeAll();
@@ -748,7 +745,6 @@ public class NewTrayInfoInsertForm {
      * 사용자 정보 새로고침.
      */
     public void refreshUserData(){
-    	dataSortIndex = new ArrayList<Integer>(); 
     	setUserInfoBoxData();
     }
 
@@ -756,17 +752,17 @@ public class NewTrayInfoInsertForm {
      * 사용자 tray 정보 셋팅.
      */
     final private void setUserInfoBoxData(){
-    	TrayUserDataControl udc=TrayUserDataControl.newIntance();
-    	java.util.List<DataEntity> menuList = udc.getItemList();
+    	java.util.List<DataEntity> menuList = TrayUserDataControl.newIntance().getItemList();
     	
     	//팝업 메뉴에 등록 
     	DataEntity tmpMenu = null;
     	int menuSize = menuList.size();
     	String [] userInfoArr = new String[menuSize];
     	for (int i = 0; i < menuSize; i++) {
-    		dataSortIndex.add(i);
     		tmpMenu = menuList.get(i);
-    		userInfoArr[i]=tmpMenu.getString(TrayKeyConstants.ITEM_NAME);
+    		userInfoArr[i]=tmpMenu.getString(TrayKeyConstants.ITEM_NAME) +"                                                                    "
+    		+TrayConfigurationConstants.DELIMETER3CHAR
+    		+tmpMenu.getString(TrayKeyConstants.ENTRY_ATTR_ID);
 		}
     	
     	selectUserList.setItems(userInfoArr);
@@ -777,11 +773,18 @@ public class NewTrayInfoInsertForm {
      * @param comboTxt
      * @return
      */
-    final private String getComboType(String comboTxt){
-    	if(comboTxt.toLowerCase().indexOf("web") >-1){
-			comboTxt="web";
-		}
-    	return comboTxt;
+    final private String getComboTypeInfo(){
+    	return getComboTypeInfo("name");
+    }
+    final private String getComboTypeInfo(String field){
+    	AppConfigBean appConfigBean = TrayAppDataControl.newIntance().getItemList().get(combo.getSelectionIndex());
+    	if("name".equals(field)){
+    		return appConfigBean.getType();
+    	}else{
+    		return appConfigBean.getEntryId();
+    	}
+    	
+    	
     }
     
     /**
@@ -790,7 +793,7 @@ public class NewTrayInfoInsertForm {
      * @param topChildLeft
      */
 	final protected void comboSelectProcess(String comboTxt) {
-		comboTxt=getComboType(comboTxt);
+		comboTxt=getComboTypeInfo();
 		
 		processLabel.setText("web".equals(comboTxt)? resource.getString("url_txt", "Url : "):resource.getString("process_txt", "Process : "));
 		
@@ -815,16 +818,18 @@ public class NewTrayInfoInsertForm {
 				processTxt.setVisible(false);
 			}
 			
-			if(selectProcessList ==null) selectBoxProcess(processComposite);
-			else {
+			if(selectProcessList !=null && !selectProcessList.isDisposed()){
 				selectProcessList.setVisible(true);
 				deleteStrLbl.setVisible(true);
+			}else {
+				selectBoxProcess(processComposite);
 			}
 			
 		     // "파일 열기" 버튼 만들기
-			if(fileOpenBtn==null) fileOpenButton(processComposite,resource.getString("file_btn", "File"));  
-			else{
+			if(fileOpenBtn !=null && !fileOpenBtn.isDisposed()){
 				fileOpenBtn.setVisible(true);
+			}else{
+				fileOpenButton(processComposite,resource.getString("file_btn", "File"));
 			}
 		}
 		
@@ -856,6 +861,9 @@ public class NewTrayInfoInsertForm {
      * @param topChildLeft
      */
     final private void selectBoxProcess(Composite topChildLeft) {
+    	if(selectProcessList != null){
+    		selectProcessList.dispose();
+    	}
     	selectProcessList = new List(topChildLeft, SWT.LEFT|SWT.BORDER|SWT.V_SCROLL);
     	
     	FormData data = new FormData();
@@ -927,9 +935,9 @@ public class NewTrayInfoInsertForm {
 		
 		Display display = new Display();  
 		
-		NewTrayInfoInsertForm tii = new NewTrayInfoInsertForm();  
+		TrayInfoInsertForm tii = new TrayInfoInsertForm();  
   
-        Shell shell = tii.open(display);
+        Shell shell = tii.open(display, new TrayInsertMenu());
         
         while (!shell.isDisposed()) {
 			if (!display.readAndDispatch()) {

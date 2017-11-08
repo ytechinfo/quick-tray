@@ -25,8 +25,8 @@ import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
 import com.Ostermiller.util.Base64;
-import com.quick.tray.TrayKeyConstants;
 import com.quick.tray.config.TrayConfigurationConstants;
+import com.quick.tray.constants.TrayKeyConstants;
 import com.quick.tray.entity.DataEntity;
 import com.quick.util.StringUtil;
 

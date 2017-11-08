@@ -24,8 +24,8 @@ import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 
 import com.Ostermiller.util.Base64;
-import com.quick.tray.TrayKeyConstants;
 import com.quick.tray.config.TrayConfigurationException;
+import com.quick.tray.constants.TrayKeyConstants;
 import com.quick.tray.entity.DataEntity;
 import com.quick.util.TrayUtil;
 
@@ -105,19 +105,24 @@ public class ImportDataControl {
 					cmd =savePath+"/"+cmd.substring(cmd.lastIndexOf('/')+1); 
 					item.put(TrayKeyConstants.ITEM_COMMAND, cmd);
 					
-					filedata = sEle.getChild(TrayKeyConstants.ITEM_DATA).getText(); 
+					Element itemDataEle = sEle.getChild(TrayKeyConstants.ITEM_DATA);
 					
-					fos = new FileOutputStream(cmd);
-					os = new BufferedOutputStream(fos);
-					byte[] buf = Base64.decodeToBytes(filedata);
+					if(itemDataEle != null){
 					
-					os.write(buf, 0, buf.length);
-					
-					os.flush();
-					buf =null;
-					
-					fos.close();
-					os.close();
+						filedata = itemDataEle.getText(); 
+						
+						fos = new FileOutputStream(cmd);
+						os = new BufferedOutputStream(fos);
+						byte[] buf = Base64.decodeToBytes(filedata);
+						
+						os.write(buf, 0, buf.length);
+						
+						os.flush();
+						buf =null;
+						
+						fos.close();
+						os.close();
+					}
 					
 				}else{
 					item.put(TrayKeyConstants.ITEM_COMMAND, cmd);

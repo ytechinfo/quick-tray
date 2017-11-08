@@ -17,7 +17,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jdom.CDATA;
 import org.jdom.Document;
@@ -28,8 +30,9 @@ import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.jdom.xpath.XPath;
 
-import com.quick.tray.TrayKeyConstants;
+import com.quick.tray.bean.AppConfigBean;
 import com.quick.tray.config.TrayConfigurationConstants;
+import com.quick.tray.constants.TrayKeyConstants;
 import com.quick.tray.entity.DataEntity;
 
 
@@ -41,6 +44,9 @@ public class TrayUserDataControl {
 	
 	private static File xml_dom_file = null;
 	private static boolean USER_DATA_MODIFY_FLAG= false;
+	
+	private static List<DataEntity> itemList;
+	private static Map<String , DataEntity> itemMap;
 	
 	private static class TrayUserDataControlHolder{
         private static final TrayUserDataControl instance = new TrayUserDataControl();
@@ -56,7 +62,6 @@ public class TrayUserDataControl {
 	
 	private void init() {
 		try {
-			int idx=0;
 			xml_dom_file = new File(TrayConfigurationConstants.DEFAULT_XML_PATH+TrayConfigurationConstants.TRAY_USER_FILE_NAME);
 			
 			if(!xml_dom_file.canRead()){
@@ -74,6 +79,7 @@ public class TrayUserDataControl {
 				root = new Element(TrayKeyConstants.ROOT_NM);
 				doc.setRootElement(root);
 			}
+			loadItemList();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -88,8 +94,25 @@ public class TrayUserDataControl {
 	 * @return
 	 */
 	public List<DataEntity> getItemList() {
-		List<DataEntity> itemList = new ArrayList<DataEntity>();
 		
+		if(itemList==null){
+			return loadItemList();
+		}
+		
+		return itemList ; 
+	}
+	
+	public DataEntity getItemMap(String key) {
+		
+		if(itemMap==null){
+			loadItemList();
+		}
+		return itemMap.containsKey(key) ?itemMap.get(key) : new DataEntity(); 
+	}
+	
+	private List<DataEntity> loadItemList() {
+		itemList = new ArrayList<DataEntity>();
+		itemMap = new HashMap<String , DataEntity> ();
 		List<Element>  list = doc.getRootElement().getChildren(); // 자식 추출 . 
 		
 		Element sEle = null;
@@ -99,18 +122,20 @@ public class TrayUserDataControl {
 		
 		for (int i = 0; i <eleSize ; i++) {
 			sEle = list.get(i);
+			String entryId = sEle.getAttribute(TrayKeyConstants.ENTRY_ATTR_ID).getValue(); 
 			item =new DataEntity();
-			item.put(TrayKeyConstants.ENTRY_ATTR_ID, sEle.getAttribute(TrayKeyConstants.ENTRY_ATTR_ID).getValue());
+			item.put(TrayKeyConstants.ENTRY_ATTR_ID, entryId);
 			item.put(TrayKeyConstants.ITEM_TYPE, sEle.getChild(TrayKeyConstants.ITEM_TYPE).getText());
 			item.put(TrayKeyConstants.ITEM_NAME, sEle.getChild(TrayKeyConstants.ITEM_NAME).getText());
 			item.put(TrayKeyConstants.ITEM_COMMAND, sEle.getChild(TrayKeyConstants.ITEM_COMMAND).getText());
 			
 			itemList.add(item);
+			itemMap.put(entryId, item);
 		}
 		
 		return itemList;
 	}
-	
+
 	/***
 	 * item 수정.
 	 * @param entity
@@ -135,13 +160,12 @@ public class TrayUserDataControl {
 			e1.addContent(new CDATA(entity.getString(TrayKeyConstants.ITEM_NAME)));
 			
 			e2.removeContent(0);
-			e2.addContent(new CDATA(entity.getString(TrayKeyConstants.ITEM_TYPE)));
+			e2.addContent(entity.getString(TrayKeyConstants.ITEM_TYPE));
 			
 			e3.removeContent(0);
 			e3.addContent(new CDATA(entity.getString(TrayKeyConstants.ITEM_COMMAND)));
 			
 		}
-		USER_DATA_MODIFY_FLAG= true;
 	}
 	
 	/**
@@ -153,12 +177,10 @@ public class TrayUserDataControl {
 	public void createItem(DataEntity entity) {
 		Element entryItem = new Element(TrayKeyConstants.ENTRY_NM);
 		entryItem.setAttribute(TrayKeyConstants.ENTRY_ATTR_ID, System.currentTimeMillis()+""+(Math.random()+100000));
-		entryItem.addContent(new Element(TrayKeyConstants.ITEM_NAME).addContent(entity.getString(TrayKeyConstants.ITEM_NAME)));
+		entryItem.addContent(new Element(TrayKeyConstants.ITEM_NAME).addContent(new CDATA(entity.getString(TrayKeyConstants.ITEM_NAME))));
 		entryItem.addContent(new Element(TrayKeyConstants.ITEM_TYPE).setText(entity.getString(TrayKeyConstants.ITEM_TYPE)));
 		entryItem.addContent(new Element(TrayKeyConstants.ITEM_COMMAND).addContent(new CDATA(entity.getString(TrayKeyConstants.ITEM_COMMAND))));
 		root.addContent(entryItem);
-		
-		USER_DATA_MODIFY_FLAG= true;
 	}
 	
 	/**
@@ -180,6 +202,9 @@ public class TrayUserDataControl {
 		serializer.output(doc, out);
 		out.flush();
 		out.close();
+		
+		loadItemList();
+		setModifyFlag(true);
 	}
 	
 	/**
@@ -199,20 +224,18 @@ public class TrayUserDataControl {
 		
 		if(e != null) doc.getRootElement().removeContent(e);
 		
-		USER_DATA_MODIFY_FLAG= true;
+		setModifyFlag(true);
 	}
 	
 	/**
 	 * 정렬한 정보 생성. 
 	 * @param dataSortIndex
 	 */
-	public void dataSort(List<Integer> dataSortIndex) {
-		List<DataEntity> data = getItemList();
-		
+	public void dataSort(List<String> dataSortIndex) {
 		doc.getRootElement().removeChildren(TrayKeyConstants.ENTRY_NM);
 		
 		for (int i = 0; i < dataSortIndex.size(); i++) {
-			createItem(data.get(dataSortIndex.get(i)));
+			createItem(itemMap.get(dataSortIndex.get(i)));
 		}
 	}
 	

@@ -8,7 +8,7 @@ CLASS_NAME : TrayKeyConstants
 프로그램 생성정보 :  2013-02-15 / ytkim
 프로그램 수정정보 :  
 */
-package com.quick.tray;
+package com.quick.tray.constants;
 
 
 public interface TrayKeyConstants {
@@ -35,4 +35,9 @@ public interface TrayKeyConstants {
 	public final static String ITEM_DATA ="app_data";
 	
 	public final static String ENTRY_ATTR_ID ="entryUniqueId";
+	
+	
+	public final static String APP_ENTRY_NM ="app-item";
+	public final static String APP_ITEM_NAME ="name";
+	public final static String APP_ITEM_COMMAND ="command";
 }
