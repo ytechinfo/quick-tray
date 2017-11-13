@@ -53,7 +53,6 @@ public class HelpForm {
 	final private DataEntity  resource = ResourceControl.getInstance().getResource();
 	
 	public HelpForm(Display g_display) {
-		System.out.println("111111111111111");
 		this.g_display = g_display;
 	}
 

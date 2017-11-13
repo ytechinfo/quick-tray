@@ -15,9 +15,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +34,9 @@ import org.jdom.output.XMLOutputter;
 import org.jdom.xpath.XPath;
 
 import com.quick.tray.bean.AppConfigBean;
+import com.quick.tray.config.TrayConfig;
 import com.quick.tray.config.TrayConfigurationConstants;
+import com.quick.tray.config.TrayConfigurationException;
 import com.quick.tray.constants.TrayKeyConstants;
 import com.quick.tray.utils.TrayUtils;
 
@@ -47,7 +52,7 @@ public class TrayAppDataControl {
 	private List<AppConfigBean> itemList;
 	
 	private Map<String,AppConfigBean> appKeyMap;
-	private String[] appType;
+	private List<String> appType;
 	
 	private static class TrayUserDataControlHolder{
         private static final TrayAppDataControl instance = new TrayAppDataControl();
@@ -62,18 +67,28 @@ public class TrayAppDataControl {
 	}
 	
 	private void init() {
+		InputStream is = null;
 		try {
-			xml_dom_file = new File(TrayConfigurationConstants.DEFAULT_XML_PATH+TrayConfigurationConstants.TRAY_APP_FILE_NAME);
+			File currentConfigPath = new File("./config",TrayConfigurationConstants.TRAY_APP_FILE_NAME);
 			
-			if(!xml_dom_file.canRead()){
-				URL url = TrayAppDataControl.class.getClassLoader().getResource(TrayConfigurationConstants.DEFAULT_XML_PATH+TrayConfigurationConstants.TRAY_APP_FILE_NAME);
-				xml_dom_file = new File(java.net.URLDecoder.decode(url.getPath(),"utf-8"));
+			boolean firstSaveFlag = false; 
+			
+			if(currentConfigPath.canRead()){
+				xml_dom_file = currentConfigPath;
+				is =new FileInputStream(xml_dom_file); 
+			}else{
+				firstSaveFlag = true; 
+				is = TrayAppDataControl.class.getClassLoader().getResourceAsStream(TrayConfigurationConstants.DEFAULT_XML_PATH+TrayConfigurationConstants.TRAY_APP_FILE_NAME);
+				
+				if (is ==null){
+					throw new TrayConfigurationException( this.getClass().getName() + " - Can't open app configuration file path: [" + TrayConfigurationConstants.DEFAULT_XML_PATH+TrayConfigurationConstants.TRAY_APP_FILE_NAME +"]");
+				}
 			}
 			
 			SAXBuilder builder = new SAXBuilder();
 			
-			if(xml_dom_file.canRead()) {
-				doc =builder.build(new FileInputStream(xml_dom_file));
+			if(is!=null) {
+				doc =builder.build(is);
 				root = doc.getRootElement();
 			}else{
 				doc = new Document(); 
@@ -81,15 +96,28 @@ public class TrayAppDataControl {
 				doc.setRootElement(root);
 			}
 			
+			if(firstSaveFlag==true){
+				xml_dom_file = currentConfigPath;
+				store();
+			}
+			
 			loadItemList();
 		} catch (Exception e) {
 			e.printStackTrace();
+		}finally{
+			if(is != null) try{is.close();}catch(Exception e){}
 		}
 	}
 
-	public static void main(String[] args) {
-		TrayAppDataControl udc=TrayAppDataControl.newIntance();
-		System.out.println(udc.getItemList());
+	public static void main(String[] args) throws JDOMException {
+		List<AppConfigBean> aaa = TrayAppDataControl.newIntance().getItemList();
+		
+		for(AppConfigBean bbb :aaa){
+			System.out.println(bbb.getEntryId() + " : " + bbb);
+		}
+		
+		TrayAppDataControl.newIntance().deleteItem("25400724d7373b0ba9c9369d9af3dd21");
+		
 	}
 	
 	/**
@@ -109,6 +137,7 @@ public class TrayAppDataControl {
 		if(appKeyMap==null){
 			loadItemList();
 		}
+		
 		return appKeyMap.containsKey(key) ?appKeyMap.get(key) : new AppConfigBean(); 
 		
 	}
@@ -122,25 +151,36 @@ public class TrayAppDataControl {
 		
 		itemList = new ArrayList<AppConfigBean>();
 		appKeyMap =new HashMap<String,AppConfigBean>();
-		appType = new String[eleSize];
+		appType = new ArrayList<String>();
 		
 		String entryKey ,entryName;
+		
+		HashSet<String> dupMap  = new HashSet<String>();
 		
 		for (int i = 0; i <eleSize ; i++) {
 			sEle = list.get(i);
 			entryKey = sEle.getAttribute(TrayKeyConstants.ENTRY_ATTR_ID).getValue(); 
 			entryName = sEle.getChild(TrayKeyConstants.ITEM_NAME).getText(); 
 			
-			AppConfigBean appConfigBean = new AppConfigBean();
 			
-			appConfigBean.setEntryId(entryKey);
-			appConfigBean.setType(sEle.getChild(TrayKeyConstants.ITEM_TYPE).getText());
-			appConfigBean.setName(entryName);
-			appConfigBean.setCommand(sEle.getChild(TrayKeyConstants.ITEM_COMMAND).getText());
 			
-			itemList.add(appConfigBean);
-			appKeyMap.put(entryKey, appConfigBean);
-			appType[i] = entryName;
+			if(!dupMap.contains(entryKey)){
+				
+				//System.out.println(entryKey);
+				
+				AppConfigBean appConfigBean = new AppConfigBean();
+				
+				appConfigBean.setEntryId(entryKey);
+				appConfigBean.setType(sEle.getChild(TrayKeyConstants.ITEM_TYPE).getText());
+				appConfigBean.setName(entryName);
+				appConfigBean.setCommand(sEle.getChild(TrayKeyConstants.ITEM_COMMAND).getText());
+				
+				itemList.add(appConfigBean);
+				appKeyMap.put(entryKey, appConfigBean);
+				appType.add(entryName);
+				
+				dupMap.add(entryKey);
+			}
 			
 		}
 	}
@@ -151,7 +191,7 @@ public class TrayAppDataControl {
 	
 	private String getEntryXpath(String entryId){
 		return new StringBuilder().append("//")
-				.append(TrayKeyConstants.ENTRY_NM)
+				.append(TrayKeyConstants.APP_ENTRY_NM)
 				.append("[@entryUniqueId='")
 				.append(entryId)
 				.append("']")
@@ -159,6 +199,7 @@ public class TrayAppDataControl {
 	}
 	
 	public boolean isElement(AppConfigBean appConfigBean) throws JDOMException{
+		
 		Element e = (Element)XPath.selectSingleNode(doc, getEntryXpath(appConfigBean)); 
 		
 		return e == null? false : true;
@@ -181,10 +222,6 @@ public class TrayAppDataControl {
 			Element e1= e.getChild(TrayKeyConstants.ITEM_NAME)
 			,e2 = e.getChild(TrayKeyConstants.ITEM_TYPE)
 			,e3 = e.getChild(TrayKeyConstants.ITEM_COMMAND);
-			
-			System.out.println("e11 : "+ e1);
-			System.out.println("e21 : "+ e2);
-			System.out.println(e3.getText()+" e31 : "+ e3 +appConfigBean.getCommand());
 			
 			e1.removeContent(0);
 			e1.addContent(new CDATA(appConfigBean.getName()));
@@ -209,7 +246,7 @@ public class TrayAppDataControl {
 	 * @param command
 	 */
 	public void createItem(AppConfigBean appConfigBean) {
-		Element entryItem = new Element(TrayKeyConstants.ENTRY_NM);
+		Element entryItem = new Element(TrayKeyConstants.APP_ENTRY_NM);
 		entryItem.setAttribute(TrayKeyConstants.ENTRY_ATTR_ID,getUID(appConfigBean.getName()) );
 		entryItem.addContent(new Element(TrayKeyConstants.ITEM_NAME).addContent(appConfigBean.getName()));
 		entryItem.addContent(new Element(TrayKeyConstants.ITEM_TYPE).setText(appConfigBean.getType()));
@@ -247,7 +284,10 @@ public class TrayAppDataControl {
 	 * @throws JDOMException
 	 */
 	public void deleteItem(String id) throws JDOMException{
+		
 		List eList = XPath.selectNodes(doc, getEntryXpath(id));
+		
+		Iterator iter = eList.iterator();
 		
 		if(eList != null) {
 			for(int i=0 ;i < eList.size();i++){
@@ -263,14 +303,14 @@ public class TrayAppDataControl {
 	 */
 	public void dataSort(List<String> entryKeyList) {
 		
-		doc.getRootElement().removeChildren(TrayKeyConstants.ENTRY_NM);
+		doc.getRootElement().removeChildren(TrayKeyConstants.APP_ENTRY_NM);
 		
 		for (int i = 0; i < entryKeyList.size(); i++) {
 			createItem(appKeyMap.get(entryKeyList.get(i)));
 		}
 	}
 
-	public String[] getAppType() {
+	public List getAppType() {
 		return appType;
 	}
 }

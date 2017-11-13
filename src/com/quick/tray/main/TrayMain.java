@@ -72,6 +72,7 @@ public class TrayMain {
 		shell.setText("Quick Tray Main");
 		shell.setData("TrayMain");
 		try {
+			
 			Image image = new Image(display, TrayUtil.getTrayImage());
 			
 			if(tray == null){
@@ -225,8 +226,6 @@ public class TrayMain {
 			.append(appConfiBean.toString())
 			.append("\n");
 			
-			
-			
 			try {
 				final Runtime rt= Runtime.getRuntime();
 				
@@ -235,15 +234,10 @@ public class TrayMain {
 						exeCmd = "http://"+exeCmd ;
 					}
 					try{
-						System.out.println(appConfiBean.getCommand()+" : "+exeCmd);
-						
 						String [] exeCommandArr= new String[2];
 						exeCommandArr[0] = appConfiBean.getCommand();
 						exeCommandArr[1] = exeCmd;
 						rt.exec(exeCommandArr);
-						
-						
-						
 					}catch(Exception e){
 						Desktop.getDesktop().browse(new URI(exeCmd));
 					}

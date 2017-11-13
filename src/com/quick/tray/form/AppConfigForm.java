@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Random;
 
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -56,7 +55,6 @@ import com.quick.tray.config.TrayConfig;
 import com.quick.tray.config.TrayConfigurationConstants;
 import com.quick.tray.constants.TrayKeyConstants;
 import com.quick.tray.data.TrayAppDataControl;
-import com.quick.tray.data.TrayUserDataControl;
 import com.quick.tray.entity.DataEntity;
 import com.quick.tray.lang.ResourceControl;
 import com.quick.tray.main.TrayMain;
@@ -81,7 +79,7 @@ public class AppConfigForm {
     Button fileOpenBtn=null;
     //오픈 창 사이즈
     //int windowW=370, windwoH=280;
-    int windowW=380, windwoH=390;
+    int windowW=380, windwoH=300;
     
     int inputSize=140;
     
@@ -125,7 +123,7 @@ public class AppConfigForm {
      */
     public Shell open(Shell shell) { 
     	changeFlag = false; 
-    	final Shell g_shell = new Shell(shell ,SWT.CLOSE);
+    	final Shell g_shell = new Shell(shell ,SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM|SWT.CLOSE);
     	
     	//new TrayInsertMenu().menuGrid(display,g_shell , this);
     	g_shell.setData(this.getClass().getName());
@@ -172,7 +170,6 @@ public class AppConfigForm {
 		gridLayout.numColumns = 1;
 		
 		topChildBottom.setLayout(gridLayout);
-		bottomAdGrid(topChildBottom,g_display);
 		
 		data = new FormData();
 	    data.top = new FormAttachment(topChildLeft, -5);
@@ -207,71 +204,6 @@ public class AppConfigForm {
         return g_shell;  
     }  
     
-    /**
-     * 이미지 그리기.
-     * @param topChildBottom
-     * @param display
-     */
-	private void bottomAdGrid(Composite topChildBottom, Display display) {
-		//왼쪽 이미지
-		final Label adImageLbl = UiUtil.createLabel(topChildBottom,"" ,SWT.NONE );
-		adImageLbl.setAlignment(SWT.CENTER|SWT.VERTICAL);
-		Color white = display.getSystemColor(SWT.COLOR_WHITE);
-		adImageLbl.setBackground(white);
-		
-		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true, false);
-		gridData.heightHint = 70;
-		gridData.verticalSpan = 3;
-		
-		adImageLbl.setLayoutData(gridData);
-		try {
-			java.util.List<java.util.Map> adList = TrayConfig.AD_LIST;
-			int size= adList.size();
-			InputStream is = null;
-			String callUrl = "";
-			if(size > 0){
-				Random oRandom = new Random();
-
-			    int randomIdx= oRandom.nextInt(size);
-			    
-			    Object obj =adList.get(randomIdx).get(TrayKeyConstants.AD_STREAM);
-			    
-			    if(obj !=null){
-			    	is =(InputStream)obj;
-			    	callUrl = String.valueOf(adList.get(randomIdx).get(TrayKeyConstants.AD_URL));
-			    }else{
-			    	for (int i = 0; i < size; i++) {
-						if(randomIdx!=i){
-							obj =adList.get(i).get(TrayKeyConstants.AD_STREAM);
-							is = obj!=null?(InputStream)obj:is;
-							callUrl = String.valueOf(adList.get(randomIdx).get(TrayKeyConstants.AD_URL));
-						}
-					}
-			    }
-			}
-			adImageLbl.setData("url",callUrl);
-			if(is==null){
-				adImageLbl.setText("\nQUICK TRAY");
-			}else{
-				Cursor handCursor = new Cursor(display, SWT.CURSOR_HAND);
-				g_image = new Image(display, is);
-				adImageLbl.setImage(g_image);
-				adImageLbl.setCursor(handCursor);
-				adImageLbl.addMouseListener(new MouseAdapter() {
-					public void mouseDown(MouseEvent event) {
-						String url = String.valueOf(event.widget.getData("url"));
-						try {
-							Desktop.getDesktop().browse(new URI(url));
-						} catch (Exception e) {}
-					}
-				});
-			}
-		} catch (Exception e) {
-			adImageLbl.setText("QUICK TRAY");
-		}
-		new Thread(new TrayAdInfo()).start();
-	}
-
 	/**
      * 왼쪽 그리기
      * @param topChildLeft
@@ -661,7 +593,7 @@ public class AppConfigForm {
     	selectAppList = new List(topChildLeft, SWT.BORDER|SWT.V_SCROLL);
     	
     	RowData rd = new RowData();  
-        rd.height = windwoH-130; 
+        rd.height = windwoH-40; 
         rd.width=170;
         selectAppList.setLayoutData(rd);
     	
@@ -728,13 +660,6 @@ public class AppConfigForm {
 		}
 	}
     
-    /**
-     * 사용자 정보 새로고침.
-     */
-    public void refreshUserData(){
-    	setUserInfoBoxData();
-    }
-
 	/**
      * 사용자 tray 정보 셋팅.
      */
@@ -783,7 +708,7 @@ public class AppConfigForm {
 		if(selectProcessList !=null && !selectProcessList.isDisposed()){
 			selectProcessList.setVisible(true);
 			deleteStrLbl.setVisible(true);
-		}else {
+		} else {
 			selectBoxProcess(processComposite);
 		}
 		

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch4jConfig>
+  <dontWrapJar>false</dontWrapJar>
+  <headerType>gui</headerType>
+  <jar>E:\99.etc\runMode\quickTrayv1.0.jar</jar>
+  <outfile>E:\99.etc\runMode\quickTray64.exe</outfile>
+  <errTitle></errTitle>
+  <cmdLine></cmdLine>
+  <chdir>.</chdir>
+  <priority>normal</priority>
+  <downloadUrl>http://java.com/download</downloadUrl>
+  <supportUrl></supportUrl>
+  <stayAlive>false</stayAlive>
+  <restartOnCrash>false</restartOnCrash>
+  <manifest></manifest>
+  <icon></icon>
+  <singleInstance>
+    <mutexName>quickTray</mutexName>
+    <windowTitle>qyickTray</windowTitle>
+  </singleInstance>
+  <classPath>
+    <mainClass>com.quick.tray.main.TrayMain</mainClass>
+    <cp>lib/jaxen-1.1.4.jar</cp>
+    <cp>lib/jdom-1.1.3.jar</cp>
+    <cp>lib/org.eclipse.core.runtime-3.1.0.jar</cp>
+    <cp>lib/org.eclipse.jface-3.1.0.jar</cp>
+    <cp>lib/ostermillerutils-1.08.02.jar</cp>
+    <cp>lib/swt-win64-3.6.2.jar</cp>
+  </classPath>
+  <jre>
+    <path></path>
+    <bundledJre64Bit>false</bundledJre64Bit>
+    <bundledJreAsFallback>false</bundledJreAsFallback>
+    <minVersion>1.6.0</minVersion>
+    <maxVersion></maxVersion>
+    <jdkPreference>preferJre</jdkPreference>
+    <runtimeBits>64/32</runtimeBits>
+  </jre>
+  <versionInfo>
+    <fileVersion>1.0.0.1</fileVersion>
+    <txtFileVersion>ver 1.0</txtFileVersion>
+    <fileDescription>quick tray</fileDescription>
+    <copyright>quick tray</copyright>
+    <productVersion>1.0.0.1</productVersion>
+    <txtProductVersion>Ver 1.0</txtProductVersion>
+    <productName>ytkim</productName>
+    <companyName></companyName>
+    <internalName>ytkim</internalName>
+    <originalFilename>quickTray64.exe</originalFilename>
+    <trademarks></trademarks>
+    <language>KOREAN</language>
+  </versionInfo>
+</launch4jConfig>

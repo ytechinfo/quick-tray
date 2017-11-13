@@ -1,14 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <tray>
- <app-item entryUniqueId="100000">
+ <app-item entryUniqueId="25400724d7373b0ba9c9369d9af3dd21">
   <name>ie</name>
   <type>web</type>
   <command><![CDATA[C:/Program Files/Internet Explorer/iexplore.exe]]></command>
  </app-item>
  
- <app-item entryUniqueId="100001">
+ <app-item entryUniqueId="554838a8451a336cb977e719e9d6623c">
   <name>chrome</name>
   <type>web</type>
-  <command><![CDATA[C:/Program Files/Google/Chrome/Application/chrome.exe]]></command>
+  <command><![CDATA[C:/Program Files (x86)/Google/Chrome/Application/chrome.exe]]></command>
  </app-item>
+ 
+  <app-item entryUniqueId="5d621214de2b3116881a254dee06b589">
+  <name>editplus</name>
+  <type>app</type>
+  <command><![CDATA[C:\Program Files (x86)\EditPlus 3\editplus.exe]]></command>
+ </app-item>
+ 
 </tray>

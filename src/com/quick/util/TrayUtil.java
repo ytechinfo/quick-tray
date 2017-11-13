@@ -11,6 +11,9 @@ CLASS_NAME : TrayUtil
 package com.quick.util;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 
@@ -32,8 +35,9 @@ public class TrayUtil {
 	 * @return
 	 * @throws TrayConfigurationException
 	 * @throws UnsupportedEncodingException
+	 * @throws FileNotFoundException 
 	 */
-	public static String getTrayImage() throws TrayConfigurationException, UnsupportedEncodingException {
+	public static InputStream getTrayImage() throws TrayConfigurationException, UnsupportedEncodingException, FileNotFoundException {
 		return getTrayImage("quickTray.png");
 	}
 	
@@ -42,18 +46,23 @@ public class TrayUtil {
 	 * @return
 	 * @throws TrayConfigurationException
 	 * @throws UnsupportedEncodingException
+	 * @throws FileNotFoundException 
 	 */
-	public static String getTrayImage(String image) throws TrayConfigurationException, UnsupportedEncodingException {
+	public static InputStream getTrayImage(String image) throws TrayConfigurationException,FileNotFoundException {
 		String imgPath = System.getProperty("tray.images.path");
+		
+		InputStream is = null; 
 		if(imgPath!=null && !"".equals(imgPath)){
 			File in_file = new File(imgPath);
-			if (!in_file.canRead())throw new TrayConfigurationException( TAG + " - Can't open jdf configuration file path: [" + imgPath+"]");
-		}else{
-			URL url = TrayUtil.class.getClassLoader().getResource("images/"+image);
 			
-			imgPath = java.net.URLDecoder.decode(url.getPath(),"utf-8");
+			if (!in_file.canRead())throw new TrayConfigurationException( TAG + " - Can't open jdf configuration file path: [" + imgPath+"]");
+			
+			is = new FileInputStream(in_file);
+		}else{
+			is = TrayUtil.class.getClassLoader().getResourceAsStream("images/"+image);
 		}
-		return imgPath;
+		
+		return is;
 	}
 	
 	/**

@@ -1,5 +1,6 @@
 package com.test.tray;
 
+import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 
 import org.eclipse.swt.SWT;
@@ -131,6 +132,9 @@ public class TextTest {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	} catch (TrayConfigurationException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} catch (FileNotFoundException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}

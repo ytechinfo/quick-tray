@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,8 +33,10 @@ import org.jdom.xpath.XPath;
 
 import com.quick.tray.bean.AppConfigBean;
 import com.quick.tray.config.TrayConfigurationConstants;
+import com.quick.tray.config.TrayConfigurationException;
 import com.quick.tray.constants.TrayKeyConstants;
 import com.quick.tray.entity.DataEntity;
+import com.quick.tray.utils.TrayUtils;
 
 
 public class TrayUserDataControl {
@@ -61,27 +64,46 @@ public class TrayUserDataControl {
 	}
 	
 	private void init() {
+		InputStream is = null; 
 		try {
-			xml_dom_file = new File(TrayConfigurationConstants.DEFAULT_XML_PATH+TrayConfigurationConstants.TRAY_USER_FILE_NAME);
 			
-			if(!xml_dom_file.canRead()){
-				URL url = TrayUserDataControl.class.getClassLoader().getResource(TrayConfigurationConstants.DEFAULT_XML_PATH+TrayConfigurationConstants.TRAY_USER_FILE_NAME);
-				xml_dom_file = new File(java.net.URLDecoder.decode(url.getPath(),"utf-8"));
+			File currentConfigPath = new File("./config",TrayConfigurationConstants.TRAY_USER_FILE_NAME);
+			
+			boolean firstSaveFlag = false; 
+			
+			
+			if(currentConfigPath.canRead()){
+				xml_dom_file = currentConfigPath;
+				is =new FileInputStream(xml_dom_file); 
+			}else{
+				firstSaveFlag = true; 
+				is = TrayAppDataControl.class.getClassLoader().getResourceAsStream(TrayConfigurationConstants.DEFAULT_XML_PATH+TrayConfigurationConstants.TRAY_USER_FILE_NAME);
+				
+				if (is ==null){
+					throw new TrayConfigurationException( this.getClass().getName() + " - Can't open app configuration file path: [" + TrayConfigurationConstants.DEFAULT_XML_PATH+TrayConfigurationConstants.TRAY_USER_FILE_NAME +"]");
+				}
 			}
 			
 			SAXBuilder builder = new SAXBuilder();
 			
-			if(xml_dom_file.canRead()) {
-				doc =builder.build(new FileInputStream(xml_dom_file));
+			if(is != null) {
+				doc =builder.build(is);
 				root = doc.getRootElement();
 			}else{
 				doc = new Document(); 
 				root = new Element(TrayKeyConstants.ROOT_NM);
 				doc.setRootElement(root);
 			}
+			
+			if(firstSaveFlag==true){
+				xml_dom_file = currentConfigPath;
+				store();
+			}
 			loadItemList();
 		} catch (Exception e) {
 			e.printStackTrace();
+		}finally{
+			if(is != null) try{is.close();}catch(Exception e){}
 		}
 	}
 
@@ -174,13 +196,21 @@ public class TrayUserDataControl {
 	 * @param type
 	 * @param command
 	 */
-	public void createItem(DataEntity entity) {
+	public DataEntity createItem(DataEntity entity) {
+		
+		String trayId =entity.getString(TrayKeyConstants.ENTRY_ATTR_ID,"");
+		if("".equals(trayId)){
+			trayId =TrayUtils.UUID(); 
+			entity.put(TrayKeyConstants.ENTRY_ATTR_ID, trayId);
+		}
+		
 		Element entryItem = new Element(TrayKeyConstants.ENTRY_NM);
-		entryItem.setAttribute(TrayKeyConstants.ENTRY_ATTR_ID, System.currentTimeMillis()+""+(Math.random()+100000));
+		entryItem.setAttribute(TrayKeyConstants.ENTRY_ATTR_ID, trayId);
 		entryItem.addContent(new Element(TrayKeyConstants.ITEM_NAME).addContent(new CDATA(entity.getString(TrayKeyConstants.ITEM_NAME))));
 		entryItem.addContent(new Element(TrayKeyConstants.ITEM_TYPE).setText(entity.getString(TrayKeyConstants.ITEM_TYPE)));
 		entryItem.addContent(new Element(TrayKeyConstants.ITEM_COMMAND).addContent(new CDATA(entity.getString(TrayKeyConstants.ITEM_COMMAND))));
 		root.addContent(entryItem);
+		return entity;
 	}
 	
 	/**
@@ -233,6 +263,7 @@ public class TrayUserDataControl {
 	 */
 	public void dataSort(List<String> dataSortIndex) {
 		doc.getRootElement().removeChildren(TrayKeyConstants.ENTRY_NM);
+		
 		
 		for (int i = 0; i < dataSortIndex.size(); i++) {
 			createItem(itemMap.get(dataSortIndex.get(i)));

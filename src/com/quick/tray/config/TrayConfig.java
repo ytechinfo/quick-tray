@@ -11,28 +11,23 @@ CLASS_NAME : TrayConfig
 
 package com.quick.tray.config;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.quick.tray.constants.TrayKeyConstants;
-import com.quick.util.FileUtil;
-
 
 public class TrayConfig extends TrayConfiguration{
-	private static long jdf_last_modified = 0;
 	private static String jdf_file_directory = null;
 	private static File out_file = null;
 	private static String jdf_file_name = null;
 	protected static TrayProperties props = null;
-	private static boolean loadFlag = false;
 	
 	public static List<java.util.Map> AD_LIST  = new ArrayList<java.util.Map>();
 	
@@ -62,30 +57,42 @@ public class TrayConfig extends TrayConfiguration{
 	protected void initialize() throws TrayConfigurationException {
 		synchronized(lock){	
 			try{
+				File currentConfigPath = new File("./config",jdf_file_name);
 				
-				File jdf_file = new File(jdf_file_directory+jdf_file_name);
+				File jdf_file = null;
+				boolean firstSaveFlag = false;
 				
-				if(!jdf_file.canRead()){
-					URL url = TrayConfig.class.getClassLoader().getResource(jdf_file_directory+jdf_file_name);
-					jdf_file = new File(java.net.URLDecoder.decode(url.getPath(),"utf-8"));
+				InputStream is = null;
+				if(currentConfigPath.canRead()){
+					jdf_file = currentConfigPath;
+					is =new FileInputStream(jdf_file); 
+				}else{
+					firstSaveFlag = true; 
+					is = TrayConfig.class.getClassLoader().getResourceAsStream(jdf_file_directory+jdf_file_name);
+					
+					if (is ==null){
+						throw new TrayConfigurationException( this.getClass().getName() + " - Can't open jdf configuration file path: [" + jdf_file_directory+jdf_file_name +"]");
+					}
 				}
 				
-				if ( ! jdf_file.canRead() ) 				
-					throw new TrayConfigurationException( this.getClass().getName() + " - Can't open jdf configuration file path: [" + jdf_file_directory+jdf_file_name +"]");
+				out_file =jdf_file;
+				props.load(new java.io.BufferedInputStream(is));
 				
-				if ( (jdf_last_modified != jdf_file.lastModified()) ) {
-					out_file =jdf_file;
-					FileInputStream jdf_fin = new FileInputStream(jdf_file);
-					props.load(new java.io.BufferedInputStream(jdf_fin));
-					jdf_fin.close();
-					jdf_last_modified = jdf_file.lastModified();
-					loadFlag= true;
-				} // end if
+				if(firstSaveFlag==true){
+					File parentDir = new File(currentConfigPath.getParent());
+					
+					if(!parentDir.exists()){
+						parentDir.mkdir();
+					}
+					
+					out_file =currentConfigPath;
+					store();
+				}
+				
+				is.close();
 			}catch(TrayConfigurationException e) {
-				jdf_last_modified = 0;
 				throw new TrayConfigurationException( this.getClass().getName() +  e.getMessage());
 			}catch(Exception e){
-				jdf_last_modified = 0;
 				throw new TrayConfigurationException( this.getClass().getName() + e.getLocalizedMessage()+"\n"+ e.getMessage());
 			}
 		} // end of sunchronized(lock);
@@ -104,29 +111,6 @@ public class TrayConfig extends TrayConfiguration{
 	}
 	
 	public void store() throws FileNotFoundException, IOException{
-		InputStreamReader isr =null;
-		BufferedReader br =null;
-		try{
-			isr = new InputStreamReader(new FileInputStream(out_file)); 
-			br = new BufferedReader(isr);
-
-			StringBuilder sb = new StringBuilder();
-			String read_data = "";
-			while((read_data =br.readLine()) != null){
-				if(read_data.indexOf(TrayKeyConstants.TRAY_LANG) >-1){
-					sb.append(TrayKeyConstants.TRAY_LANG).append('=').append(props.getString(TrayKeyConstants.TRAY_LANG)).append("\n");
-				}else{
-					sb.append(read_data).append("\n");
-				}
-			}
-			br.close();
-			isr.close();
-			
-			FileUtil.write(out_file, sb.toString());
-		}finally{
-			if(br !=null) try{br.close();}catch(Exception e){}
-			if(isr !=null) try{isr.close();}catch(Exception e){}
-		}		
-		
+		props.store(new OutputStreamWriter(new FileOutputStream(out_file)),"quicktray");
 	}
 }

@@ -8,7 +8,7 @@ public class TrayUtils {
 	private TrayUtils(){}
 	
 	public static void main(String[] args) {
-		System.out.println(TrayUtils.UUID("chrome"));
+		System.out.println(TrayUtils.UUID());
 		//25400724d7373b0ba9c9369d9af3dd21
 		//
 

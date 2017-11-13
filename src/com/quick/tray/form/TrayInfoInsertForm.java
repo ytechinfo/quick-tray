@@ -526,7 +526,7 @@ public class TrayInfoInsertForm {
 					}else{
 			    		TrayUserDataControl.newIntance().createItem(inInfo );
 			    		int itenLen = selectUserList.getItems().length;
-			    		selectUserList.add(name,itenLen);
+			    		selectUserList.add(getUserItemName(inInfo),itenLen);
 					}
 				
 					TrayUserDataControl.newIntance().store();
@@ -539,6 +539,11 @@ public class TrayInfoInsertForm {
     	});
 	}
     
+    final  private String getUserItemName(DataEntity inInfo) {
+	   return inInfo.getString(TrayKeyConstants.ITEM_NAME) +"                                                                    "
+	    		+TrayConfigurationConstants.DELIMETER3CHAR
+	    		+inInfo.getString(TrayKeyConstants.ENTRY_ATTR_ID);
+	}
     /**
      * 삭제 버튼.
      * @param btn2Line
@@ -708,6 +713,9 @@ public class TrayInfoInsertForm {
     		
 			String type = tmpEntity.getString(TrayKeyConstants.ITEM_TYPE);
 			
+			AppConfigBean appInfo = TrayAppDataControl.newIntance().getItemMap(type);
+			type = appInfo.getName();
+			
 			nameTxt.setText(tmpEntity.getString(TrayKeyConstants.ITEM_NAME));
 			
 			String comboTxt = combo.getItem(combo.getSelectionIndex());
@@ -760,9 +768,7 @@ public class TrayInfoInsertForm {
     	String [] userInfoArr = new String[menuSize];
     	for (int i = 0; i < menuSize; i++) {
     		tmpMenu = menuList.get(i);
-    		userInfoArr[i]=tmpMenu.getString(TrayKeyConstants.ITEM_NAME) +"                                                                    "
-    		+TrayConfigurationConstants.DELIMETER3CHAR
-    		+tmpMenu.getString(TrayKeyConstants.ENTRY_ATTR_ID);
+    		userInfoArr[i]= getUserItemName(tmpMenu);
 		}
     	
     	selectUserList.setItems(userInfoArr);
