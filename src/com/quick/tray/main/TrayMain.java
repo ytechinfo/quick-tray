@@ -230,7 +230,7 @@ public class TrayMain {
 				final Runtime rt= Runtime.getRuntime();
 				
 				if("web".equals(appConfiBean.getType())){
-					if(exeCmd.startsWith("http://")){
+					if(!exeCmd.startsWith("http://")){
 						exeCmd = "http://"+exeCmd ;
 					}
 					try{
