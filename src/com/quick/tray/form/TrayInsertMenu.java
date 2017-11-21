@@ -214,7 +214,7 @@ public class TrayInsertMenu {
 	 * @author ytkim
 	 */
 	class ImportItemListener implements SelectionListener {
-		FileDialog g_fileDialog;
+		
 		InputDialog inputDialog ;
 		
 		public void widgetSelected(SelectionEvent event) {
@@ -231,9 +231,8 @@ public class TrayInsertMenu {
 				return ;
 			}
 			
-			if (g_fileDialog == null) {
-				g_fileDialog = new FileDialog(g_shell, SWT.OPEN);
-			}
+			FileDialog g_fileDialog = new FileDialog(g_shell, SWT.OPEN);
+			
 			g_fileDialog.setFilterExtensions(new String[] { "*."+TrayConfigurationConstants.TRAY_DATA_EXT });
 			String filePath = g_fileDialog.open();
 
