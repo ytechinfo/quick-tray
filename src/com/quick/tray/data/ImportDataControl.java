@@ -19,20 +19,25 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 
 import com.Ostermiller.util.Base64;
+import com.quick.tray.bean.AppConfigBean;
+import com.quick.tray.config.TrayConfig;
 import com.quick.tray.config.TrayConfigurationException;
 import com.quick.tray.constants.TrayKeyConstants;
 import com.quick.tray.entity.DataEntity;
-import com.quick.util.TrayUtil;
+import com.quick.util.TrayUIUtil;
 
 
 public class ImportDataControl {
-	// 설정 item node명
 	
+	private static Logger logger = Logger.getLogger(TrayConfig.class);
+	
+	// 설정 item node명
 	private Document doc = null;
 	private Element root = null;
 	
@@ -73,7 +78,7 @@ public class ImportDataControl {
 		
 		Iterator<Element> eleIter = doc.getRootElement().getChildren(TrayKeyConstants.ENTRY_NM).iterator();
 		
-		String savePath = TrayUtil.getSavePath();
+		String savePath = TrayUIUtil.getSavePath();
 				
 		File tmpFilePath  = new File(savePath);
 		
@@ -95,8 +100,10 @@ public class ImportDataControl {
 				type = sEle.getChild(TrayKeyConstants.ITEM_TYPE).getText();
 				cmd = sEle.getChild(TrayKeyConstants.ITEM_COMMAND).getText();
 				
+				AppConfigBean appBean = TrayAppDataControl.newIntance().getItemMap(type);
+				
 				item.put(TrayKeyConstants.ENTRY_ATTR_ID, sEle.getAttribute(TrayKeyConstants.ENTRY_ATTR_ID).getValue());
-				item.put(TrayKeyConstants.ITEM_TYPE, type);
+				item.put(TrayKeyConstants.ITEM_TYPE, appBean.getEntryId());
 				item.put(TrayKeyConstants.ITEM_NAME, sEle.getChild(TrayKeyConstants.ITEM_NAME).getText());
 				
 				if("app".equals(type)){
@@ -131,7 +138,7 @@ public class ImportDataControl {
 				itemList.add(item);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			logger.error("getItemList() ",e);
 		}finally{
 			eleIter = null;
 			root = null;

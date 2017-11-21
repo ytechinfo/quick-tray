@@ -138,7 +138,7 @@ public class TrayAppDataControl {
 			loadItemList();
 		}
 		
-		return appKeyMap.containsKey(key) ?appKeyMap.get(key) : new AppConfigBean(); 
+		return appKeyMap.containsKey(key) ?appKeyMap.get(key) : getDefaultApp(); 
 		
 	}
 	
@@ -183,6 +183,10 @@ public class TrayAppDataControl {
 			}
 			
 		}
+	}
+	
+	public AppConfigBean getDefaultApp(){
+		return itemList.size() > 0 ? itemList.get(0) : new AppConfigBean();
 	}
 	
 	private String getEntryXpath(AppConfigBean appConfigBean){

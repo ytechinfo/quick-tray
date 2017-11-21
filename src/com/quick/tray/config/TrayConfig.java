@@ -18,12 +18,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 
 public class TrayConfig extends TrayConfiguration{
+	
+	private static Logger logger = Logger.getLogger(TrayConfig.class);
+	
 	private static String jdf_file_directory = null;
 	private static File out_file = null;
 	private static String jdf_file_name = null;
@@ -91,8 +95,10 @@ public class TrayConfig extends TrayConfiguration{
 				
 				is.close();
 			}catch(TrayConfigurationException e) {
+				logger.error("TrayConfig : ",e);
 				throw new TrayConfigurationException( this.getClass().getName() +  e.getMessage());
 			}catch(Exception e){
+				logger.error("TrayConfig : ",e);
 				throw new TrayConfigurationException( this.getClass().getName() + e.getLocalizedMessage()+"\n"+ e.getMessage());
 			}
 		} // end of sunchronized(lock);

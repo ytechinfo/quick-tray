@@ -10,13 +10,9 @@ CLASS_NAME : AppConfigForm
 */
 package com.quick.tray.form;
 
-import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
 import java.util.ArrayList;
-import java.util.Random;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
@@ -26,14 +22,11 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
@@ -49,18 +42,15 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.quick.tray.ad.TrayAdInfo;
 import com.quick.tray.bean.AppConfigBean;
-import com.quick.tray.config.TrayConfig;
 import com.quick.tray.config.TrayConfigurationConstants;
-import com.quick.tray.constants.TrayKeyConstants;
 import com.quick.tray.data.TrayAppDataControl;
 import com.quick.tray.entity.DataEntity;
 import com.quick.tray.lang.ResourceControl;
 import com.quick.tray.main.TrayMain;
 import com.quick.tray.ui.UiUtil;
 import com.quick.tray.utils.TrayUtils;
-import com.quick.util.TrayUtil;
+import com.quick.util.TrayUIUtil;
 
 public class AppConfigForm {
 	
@@ -180,7 +170,7 @@ public class AppConfigForm {
 		
 	    g_shell.setFocus();
         // 메뉴 관리폼 중간에 띄우기. 시작 
-        g_shell.setLocation (TrayUtil.getCenterPoint(g_display, g_shell));
+        g_shell.setLocation (TrayUIUtil.getCenterPoint(g_display, g_shell));
         // 메뉴 관리폼 중간에 띄우기 끝
         
         g_shell.open();

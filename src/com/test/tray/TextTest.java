@@ -16,7 +16,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import com.quick.tray.config.TrayConfigurationException;
-import com.quick.util.TrayUtil;
+import com.quick.util.TrayUIUtil;
 
 public class TextTest {
   Display display = new Display();
@@ -127,7 +127,7 @@ public class TextTest {
     pages.setText("500pp");
     pubisher.setText("John Wiley & Sons");
     try {
-		cover.setBackground(new Image(display, TrayUtil.getTrayImage()));
+		cover.setBackground(new Image(display, TrayUIUtil.getTrayImage()));
 	} catch (UnsupportedEncodingException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();

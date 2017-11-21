@@ -30,7 +30,7 @@ import com.quick.tray.entity.DataEntity;
 import com.quick.tray.lang.ResourceControl;
 import com.quick.tray.main.TrayMain;
 import com.quick.tray.ui.UiUtil;
-import com.quick.util.TrayUtil;
+import com.quick.util.TrayUIUtil;
 
 public class DataExportImportForm {
 	Display g_display; 
@@ -113,7 +113,7 @@ public class DataExportImportForm {
     	data.left = new FormAttachment(0, dataGridW/2-btnW-5);
 		btn1Line.setLayoutData(data);
 		
-        dialog.setLocation (TrayUtil.getCenterPoint(g_display, dialog));
+        dialog.setLocation (TrayUIUtil.getCenterPoint(g_display, dialog));
 		
 		dialog.open();
         while (!dialog.isDisposed()) {

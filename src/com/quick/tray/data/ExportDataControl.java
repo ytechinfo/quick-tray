@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
 import org.jdom.CDATA;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -25,13 +26,18 @@ import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
 import com.Ostermiller.util.Base64;
+import com.quick.tray.config.TrayConfig;
 import com.quick.tray.config.TrayConfigurationConstants;
 import com.quick.tray.constants.TrayKeyConstants;
 import com.quick.tray.entity.DataEntity;
+import com.quick.tray.utils.TrayUtils;
 import com.quick.util.StringUtil;
 
 
 public class ExportDataControl {
+	
+	private static Logger logger = Logger.getLogger(TrayConfig.class);
+	
 	// 설정 item node명
 	
 	private Document doc = null;
@@ -66,7 +72,7 @@ public class ExportDataControl {
 		String type = entity.getString(TrayKeyConstants.ITEM_TYPE);
 		String cmd = entity.getString(TrayKeyConstants.ITEM_COMMAND);
 		Element entryItem = new Element(TrayKeyConstants.ENTRY_NM);
-		entryItem.setAttribute(TrayKeyConstants.ENTRY_ATTR_ID, System.currentTimeMillis()+""+(Math.random()+100000));
+		entryItem.setAttribute(TrayKeyConstants.ENTRY_ATTR_ID, TrayUtils.UUID());
 		entryItem.addContent(new Element(TrayKeyConstants.ITEM_NAME).addContent(entity.getString(TrayKeyConstants.ITEM_NAME)));
 		entryItem.addContent(new Element(TrayKeyConstants.ITEM_TYPE).setText(type));
 		entryItem.addContent(new Element(TrayKeyConstants.ITEM_COMMAND).addContent(new CDATA(cmd)));
@@ -95,7 +101,6 @@ public class ExportDataControl {
 					if(is !=null) try{ is.close();}catch(Exception e){};
 					if(out !=null) try{ out.close();}catch(Exception e){};
 				}
-				
 			}
 		}
 		

@@ -10,9 +10,19 @@ CLASS_NAME : TrayInsertMenu
 */
 package com.quick.tray.form;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -29,16 +39,17 @@ import com.quick.tray.data.ImportDataControl;
 import com.quick.tray.data.TrayUserDataControl;
 import com.quick.tray.entity.DataEntity;
 import com.quick.tray.lang.ResourceControl;
+import com.quick.tray.utils.TrayUtils;
 
 public class TrayInsertMenu {
+	
+	private static Logger logger = Logger.getLogger(TrayConfig.class);
 	
 	Display g_display;
 
 	Shell g_shell;
 	
 	boolean initFlag = false; 
-	
-	FileDialog g_fileDialog;
 	
 	Image g_image = null;
 	
@@ -84,8 +95,9 @@ public class TrayInsertMenu {
 		g_shell = shell;
 		g_display=display;
 		
+		dataExportImportForm = new DataExportImportForm(g_display, newTrayInfoInsertForm);
+		
 		if(initFlag==false){
-			dataExportImportForm = new DataExportImportForm(g_display, newTrayInfoInsertForm);
 			helpForm = new HelpForm(g_display);
 			appConfigForm = new AppConfigForm(g_display);
 			initFlag= true; 
@@ -140,8 +152,21 @@ public class TrayInsertMenu {
 		
 		MenuItem fileImportItem, fileExportItem, fileAppConfigItem, fileLangItem;
 
-		fileImportItem = new MenuItem(fileMenu, SWT.PUSH);
+		fileImportItem = new MenuItem(fileMenu, SWT.CASCADE);
 		fileImportItem.setText(resource.getString("top_menu_import", "&Import"));
+		
+		final Menu subfileImportItem = new Menu(g_shell, SWT.DROP_DOWN);
+		fileImportItem.setMenu(subfileImportItem);
+		
+		
+		final MenuItem fileImport = new MenuItem(subfileImportItem, SWT.PUSH);
+		fileImport.setText(resource.getString("top_menu_import_file", "&File Import"));
+		fileImport.setData("importType","file");
+				
+		final MenuItem remoteImport = new MenuItem(subfileImportItem, SWT.PUSH);
+		remoteImport.setText(resource.getString("top_menu_import_remote", "&Remote Import"));
+		remoteImport.setData("importType","remote");
+		
 
 		fileExportItem = new MenuItem(fileMenu, SWT.PUSH);
 		fileExportItem.setText(resource.getString("top_menu_export", "&Export"));
@@ -150,7 +175,9 @@ public class TrayInsertMenu {
 		fileAppConfigItem.setText(resource.getString("top_menu_appconfig", "app config"));
 				
 		
-		fileImportItem.addSelectionListener(importItemListener);
+		fileImport.addSelectionListener(importItemListener);
+		remoteImport.addSelectionListener(importItemListener);
+		
 		fileExportItem.addSelectionListener(exportItemListener);
 		fileAppConfigItem.addSelectionListener(appConfigListener);
 		
@@ -187,7 +214,23 @@ public class TrayInsertMenu {
 	 * @author ytkim
 	 */
 	class ImportItemListener implements SelectionListener {
+		FileDialog g_fileDialog;
+		InputDialog inputDialog ;
+		
 		public void widgetSelected(SelectionEvent event) {
+			
+			String importType = String.valueOf(event.widget.getData("importType"));
+			
+			if("remote".equals(importType)){
+				
+				String remoteURL =(String) TrayConfig.getInstance().getProperties().get("tray.remote.url");
+				inputDialog = new InputDialog(g_shell, resource.getString("remote_input_tit_dialog", "remote url"), resource.getString("remote_input_msg_dialog", "remote url input") , remoteURL, null);
+				
+				validCheck(inputDialog);
+				
+				return ;
+			}
+			
 			if (g_fileDialog == null) {
 				g_fileDialog = new FileDialog(g_shell, SWT.OPEN);
 			}
@@ -202,11 +245,87 @@ public class TrayInsertMenu {
 					tmpData =idc.getItemList();
 					idc=null;
 				} catch (Exception e) {
-					MessageDialog.openError(g_shell, "Error","\n"+ e.toString());
+					MessageDialog.openError(g_shell, "Error","\n"+ e.getMessage());
 					return ; 
 				}
 				
 				dataExportImportForm.open("import", g_shell,tmpData);
+			}
+		}
+		
+		public void validCheck(InputDialog inputDialog2){
+			if(inputDialog2.open() ==  Window.OK){
+				String inputVal =inputDialog2.getValue(); 
+				String result = isValid(inputVal);
+				
+				if(result != null){
+					MessageDialog.openError(g_shell, "Error","\n"+ result);
+					validCheck(inputDialog2);
+				}else{
+					HttpURLConnection conn = null; 
+					FileOutputStream fos =null;
+					InputStream in = null;
+					try {
+						URL url = new URL (inputVal);
+						conn = (HttpURLConnection)url.openConnection(); 
+						
+						conn.setConnectTimeout(3000);
+						conn.setReadTimeout(3000);
+						
+						if(conn.getResponseCode() ==HttpURLConnection.HTTP_OK){
+							
+							File fileData = new File("./fileData",TrayUtils.UUID()+".xml");
+							
+							
+							File parentDir = new File(fileData.getParent());
+							
+							if(!parentDir.exists()){
+								parentDir.mkdir();
+							}
+							
+							in = conn.getInputStream();
+							fos = new FileOutputStream(fileData);
+							
+							byte[] buffer  = new byte[1024];
+							int readLen = -1;
+							
+							while((readLen = in.read(buffer)) > 0){
+								fos.write(buffer ,0 ,readLen );
+							}
+							fos.close();
+							
+							in.close();
+							
+							logger.info(" fileData : "+fileData.getAbsolutePath());
+							
+							List<DataEntity> tmpData =null;
+							try {
+								ImportDataControl idc= new ImportDataControl(fileData);
+								tmpData =idc.getItemList();
+								idc=null;
+							} catch (Exception e) {
+								logger.error(e.getMessage(), e);
+								MessageDialog.openError(g_shell, "Error","\n"+ e.getMessage());
+								validCheck(inputDialog2);
+							}
+							
+							fileData.delete();
+							
+							logger.info(tmpData);
+							
+							dataExportImportForm.open("import", g_shell,tmpData);
+						}
+						conn.disconnect();
+					} catch (MalformedURLException e) {
+						logger.error(e.getMessage(), e);
+					} catch (IOException e) {
+						logger.error(e.getMessage(), e);
+					}finally{
+						if(fos!=null)try{ fos.close(); }catch(Exception e){}
+						if(in !=null)try{ in.close(); }catch(Exception e){}
+						if(conn!=null) conn.disconnect();
+					}
+				}
 			}
 		}
 
@@ -294,4 +413,44 @@ public class TrayInsertMenu {
 			return ; 
 		}
 	}
+	
+	
+	public String isValid(String text) {
+		
+		HttpURLConnection conn = null; 
+		try {
+			URL url = new URL (text);
+			conn = (HttpURLConnection)url.openConnection(); 
+			
+			conn.setConnectTimeout(3000);
+			conn.setReadTimeout(3000);
+			
+			if(conn.getResponseCode() ==HttpURLConnection.HTTP_OK){
+				
+			}else{
+				return "not valid";
+			}
+			conn.disconnect();
+			
+			try {
+				TrayConfig.getInstance().getProperties().put("tray.remote.url",text);
+				TrayConfig.getInstance().store();
+			} catch (Exception errMsg) {
+				errMsg.printStackTrace();
+			}
+		} catch (MalformedURLException e) {
+			logger.error(e.getMessage(), e);
+			
+			return e.getMessage();
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			return e.getMessage();
+		}finally{
+			if(conn!=null) conn.disconnect();
+		}
+		
+		return null;
+	}
+		
+	
 }

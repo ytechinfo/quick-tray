@@ -15,6 +15,7 @@ import java.io.File;
 import java.net.URI;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -41,12 +42,13 @@ import com.quick.tray.form.TrayInfoInsertForm;
 import com.quick.tray.form.TrayInsertMenu;
 import com.quick.tray.lang.ResourceControl;
 import com.quick.util.StringUtil;
-import com.quick.util.TrayUtil;
+import com.quick.util.TrayUIUtil;
 
 public class TrayMain {
+	private static Logger logger = Logger.getLogger(TrayConfig.class);
+	
 	public static Color WHITE = null;
 	public static Image ICON_IMAGE = null;
-	private DataEntity TRAY_COFNIG = TrayConfig.getInstance().getProperties();
 	Display display=null;
 	Menu trayMenu = null;
 	final private TrayInsertMenu trayInsertMenu = new TrayInsertMenu(); 
@@ -54,9 +56,9 @@ public class TrayMain {
 	public static void main(String[] args){
 		try{
 			new Thread(new TrayAdInfo()).start();
-			TrayMain main = new TrayMain();
+			new TrayMain();
 		}catch(Exception e){
-			e.printStackTrace();
+			logger.error(e.getMessage(), e);
 		}
 	}
 
@@ -64,7 +66,7 @@ public class TrayMain {
 		display = new Display();
 		WHITE= display.getSystemColor(SWT.COLOR_WHITE);
 		try{
-			ICON_IMAGE = new Image(display, TrayUtil.getTrayImage("menuQuickTray.png"));
+			ICON_IMAGE = new Image(display, TrayUIUtil.getTrayImage("menuQuickTray.png"));
 		}catch(Exception e){}
 		
 		final Tray tray = display.getSystemTray();
@@ -73,7 +75,7 @@ public class TrayMain {
 		shell.setData("TrayMain");
 		try {
 			
-			Image image = new Image(display, TrayUtil.getTrayImage());
+			Image image = new Image(display, TrayUIUtil.getTrayImage());
 			
 			if(tray == null){
 				System.err.println("System tray is currently not supported.");
@@ -110,7 +112,7 @@ public class TrayMain {
 				display.dispose();
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e.getMessage(), e);
 		}
 	}
 	
@@ -230,7 +232,7 @@ public class TrayMain {
 				final Runtime rt= Runtime.getRuntime();
 				
 				if("web".equals(appConfiBean.getType())){
-					if(!exeCmd.startsWith("http://")){
+					if(!exeCmd.startsWith("http://") && !exeCmd.startsWith("https://")){
 						exeCmd = "http://"+exeCmd ;
 					}
 					try{
@@ -250,10 +252,13 @@ public class TrayMain {
 					try{
 						rt.exec(exeCommandArr);
 					}catch(Exception e){
+						logger.error(e.getMessage(), e);
 						Desktop.getDesktop().open(new File(exeCmd));
 					}
 				}
 			} catch (Exception e1) {
+				logger.error(e1.getMessage(), e1);
+
 				MessageDialog.openError(display.getActiveShell(), "Error", errMsg.toString());
 			}
 		}

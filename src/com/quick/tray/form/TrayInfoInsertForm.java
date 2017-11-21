@@ -62,7 +62,7 @@ import com.quick.tray.lang.ResourceControl;
 import com.quick.tray.main.TrayMain;
 import com.quick.tray.ui.UiUtil;
 import com.quick.tray.utils.TrayUtils;
-import com.quick.util.TrayUtil;
+import com.quick.util.TrayUIUtil;
 
 public class TrayInfoInsertForm {
     FileDialog g_fileDialog;  
@@ -191,7 +191,7 @@ public class TrayInfoInsertForm {
 		
 	    g_shell.setFocus();
         // 메뉴 관리폼 중간에 띄우기. 시작 
-        g_shell.setLocation (TrayUtil.getCenterPoint(display, g_shell));
+        g_shell.setLocation (TrayUIUtil.getCenterPoint(display, g_shell));
         // 메뉴 관리폼 중간에 띄우기 끝
         
         g_shell.open();
@@ -522,7 +522,7 @@ public class TrayInfoInsertForm {
 		    	try {
 					if(sIdx >-1){
 						TrayUserDataControl.newIntance().modify(inInfo);
-						selectUserList.setItem(sIdx, name);
+						selectUserList.setItem(sIdx, getUserItemName(inInfo));
 					}else{
 			    		TrayUserDataControl.newIntance().createItem(inInfo );
 			    		int itenLen = selectUserList.getItems().length;
@@ -666,6 +666,7 @@ public class TrayInfoInsertForm {
      * @param topChildLeft
      */
     private void selectUserInfoBoxProcess(final Composite topChildLeft) {
+    	
     	selectUserList = new List(topChildLeft, SWT.BORDER|SWT.V_SCROLL);
     	
     	RowData rd = new RowData();  

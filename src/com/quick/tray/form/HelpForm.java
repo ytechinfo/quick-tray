@@ -35,7 +35,7 @@ import com.quick.tray.lang.ResourceControl;
 import com.quick.tray.main.TrayMain;
 import com.quick.tray.ui.UiUtil;
 import com.quick.util.StringUtil;
-import com.quick.util.TrayUtil;
+import com.quick.util.TrayUIUtil;
 
 public class HelpForm {
 	Display g_display; 
@@ -89,7 +89,7 @@ public class HelpForm {
 		helpImageLbl.setBackground(white);
 		Image helpImg = null;
 		try {
-			helpImg=new Image(g_display, TrayUtil.getTrayImage("helpQuickTray.png"));
+			helpImg=new Image(g_display, TrayUIUtil.getTrayImage("helpQuickTray.png"));
 			
 			helpImageLbl.setImage(helpImg);
 		} catch (Exception e) {}
@@ -115,7 +115,7 @@ public class HelpForm {
 		sb.append(resource.getString("app_name", "Quick Tray")).append("\n")
 		.append("email : ").append("qmffjem09@gmail.com").append("\n")
 		.append("blog : ").append("http://qmffjem09.tistory.com/entry/%ED%80%B5-%ED%8A%B8%EB%A0%88%EC%9D%B4Quick-tray").append("\n")
-		.append("퀵연락처 : ").append("https://play.google.com/store/apps/details?id=com.quick.call.activity").append("\n")	;
+		.append("git : ").append("https://github.com/ytechinfo").append("\n")	;
 		
 		text = new StyledText(helpRight, SWT.MULTI);
 		text.setText(sb.toString());
@@ -159,7 +159,7 @@ public class HelpForm {
 	    	}
     	});
 		
-		helpDialog.setLocation (TrayUtil.getCenterPoint(g_display, helpDialog));
+		helpDialog.setLocation (TrayUIUtil.getCenterPoint(g_display, helpDialog));
 		
 		helpDialog.open();
 		

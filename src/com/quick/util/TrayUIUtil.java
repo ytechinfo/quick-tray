@@ -24,11 +24,12 @@ import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 
 import com.quick.tray.config.TrayConfigurationException;
+import com.quick.tray.utils.TrayUtils;
 
-public class TrayUtil {
+public class TrayUIUtil {
 	private static String TAG = "TrayUtil";
 	
-	private TrayUtil(){}
+	private TrayUIUtil(){}
 	
 	 /**
 	 * tray 이미지 추출.
@@ -59,7 +60,7 @@ public class TrayUtil {
 			
 			is = new FileInputStream(in_file);
 		}else{
-			is = TrayUtil.class.getClassLoader().getResourceAsStream("images/"+image);
+			is = TrayUIUtil.class.getClassLoader().getResourceAsStream("images/"+image);
 		}
 		
 		return is;
@@ -72,7 +73,7 @@ public class TrayUtil {
 	 * @throws UnsupportedEncodingException
 	 */
 	public static String getImagePath() throws UnsupportedEncodingException {
-		URL url = TrayUtil.class.getClassLoader().getResource("images/");
+		URL url = TrayUIUtil.class.getClassLoader().getResource("images/");
 		return java.net.URLDecoder.decode(url.getPath(),"utf-8");
 	}
 	
@@ -83,13 +84,23 @@ public class TrayUtil {
 	 * @throws UnsupportedEncodingException
 	 */
 	public static String getSavePath() throws UnsupportedEncodingException {
-		URL url = TrayUtil.class.getClassLoader().getResource("./");
+		File fileData = new File("./fileData","tmpSavePath.xml");
+		
+		File parentDir = new File(fileData.getParent());
+		
+		if(!parentDir.exists()){
+			parentDir.mkdir();
+		}
+		
+		/*
+		URL url = TrayUIUtil.class.getClassLoader().getResource("./");
 		String imgPath = java.net.URLDecoder.decode(url.getPath(),"utf-8");
-		imgPath = imgPath +"FileData";
+		imgPath = imgPath +"fileData";
 		if(!new File(imgPath).exists()){
 			new File(imgPath).mkdirs();
 		}
-		return imgPath;
+		*/
+		return parentDir.getAbsolutePath();
 	}
 	
 	/**
