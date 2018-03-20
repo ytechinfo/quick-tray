@@ -3,6 +3,7 @@ package com.quick.tray.form;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -21,6 +22,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 
+import com.quick.tray.config.TrayConfig;
 import com.quick.tray.config.TrayConfigurationConstants;
 import com.quick.tray.constants.TrayKeyConstants;
 import com.quick.tray.constants.UIConstants;
@@ -33,6 +35,8 @@ import com.quick.tray.ui.UiUtil;
 import com.quick.util.TrayUIUtil;
 
 public class DataExportImportForm {
+	private static Logger logger = Logger.getLogger(DataExportImportForm.class);
+	
 	Display g_display; 
 	
 	final int dataGridW = 260 , dataGridH = 320;
@@ -40,6 +44,8 @@ public class DataExportImportForm {
 	final int btnW = UIConstants.BTN_W, btnH = UIConstants.BTN_H;
 	
 	Table dataTable;
+	
+	final String[] file_export_ext = {"xml"};
 	
 	final private DataEntity  resource = ResourceControl.getInstance().getResource();
 	
@@ -135,10 +141,14 @@ public class DataExportImportForm {
 	    
 		exBtn.setLayoutData(btnRowData);
     	
+		
+		
 		exBtn.addSelectionListener(new SelectionAdapter() {
 	    	public void widgetSelected(SelectionEvent event) {
-	    		
+	    		 
 	    		FileDialog fileDialog = new FileDialog(exBtn.getShell(), SWT.SAVE);
+	    		fileDialog.setFilterExtensions(file_export_ext);
+	    		fileDialog.setFileName("quickTrayExport");
 				String filename = fileDialog.open();
 				if (filename == null) {
 					return;
@@ -187,17 +197,26 @@ public class DataExportImportForm {
 	    		int len = item.length;
 	    		TableItem tmpItem = null;
 	    		DataEntity tmpEntity = null;
-	    		for (int i = 0; i < len; i++) {
-	    			tmpItem = item[i];
-					if(tmpItem.getChecked()){
-						tmpEntity = (DataEntity)tmpItem.getData(TrayKeyConstants.ENTRY_NM);
-						TrayUserDataControl.newIntance().createItem(tmpEntity );
-					};
-				}
 	    		try {
+		    		for (int i = 0; i < len; i++) {
+		    			tmpItem = item[i];
+						if(tmpItem.getChecked()){
+							tmpEntity = (DataEntity)tmpItem.getData(TrayKeyConstants.ENTRY_NM);
+							
+							if(TrayUserDataControl.newIntance().containsItem(tmpEntity)){
+								TrayUserDataControl.newIntance().modify(tmpEntity);
+							}else{
+								TrayUserDataControl.newIntance().createItem(tmpEntity);
+							}
+							
+						};
+					}
 					TrayUserDataControl.newIntance().store();
-				} catch (IOException e) {
-					e.printStackTrace();
+				} catch (Exception e) {
+					logger.error("initImportBtn : "+ e.getMessage()+" :: " +tmpItem.toString());
+					logger.error("initImportBtn",e);
+					MessageDialog.openError(addBtn.getShell(), "Error","\n"+ e.toString()+"\n"+ tmpItem.toString());
+					
 				}
 	    		trayInfoInsertForm.refreshUserData();
 	    		addBtn.getShell().dispose();

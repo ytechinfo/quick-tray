@@ -157,6 +157,34 @@ public class TrayUserDataControl {
 		
 		return itemList;
 	}
+	
+	/**
+	 * 
+	 * @Method Name  : containsItem
+	 * @Method 설명 :n 
+	 * @작성자   : ytkim
+	 * @작성일   : 2018. 3. 19. 
+	 * @Contents :   
+	 * @변경이력  :
+	 * @param entity
+	 * @return
+	 * @throws JDOMException
+	 */
+	public boolean containsItem (DataEntity entity) throws  JDOMException{
+		String XPATH_ENTRY= new StringBuilder().append("//")
+			.append(TrayKeyConstants.ENTRY_NM)
+			.append("[@entryUniqueId='")
+			.append(entity.getString(TrayKeyConstants.ENTRY_ATTR_ID))
+			.append("']")
+			.toString();
+			
+			Element e = (Element)XPath.selectSingleNode(doc, XPATH_ENTRY); 
+			
+		if(e != null){
+			return true; 
+		}
+		return false; 
+	}
 
 	/***
 	 * item 수정.
@@ -200,7 +228,7 @@ public class TrayUserDataControl {
 		
 		String trayId =entity.getString(TrayKeyConstants.ENTRY_ATTR_ID,"");
 		if("".equals(trayId)){
-			trayId =TrayUtils.UUID(); 
+			trayId =TrayUtils.UUID();
 			entity.put(TrayKeyConstants.ENTRY_ATTR_ID, trayId);
 		}
 		

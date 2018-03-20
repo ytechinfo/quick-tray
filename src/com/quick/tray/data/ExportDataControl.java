@@ -72,8 +72,14 @@ public class ExportDataControl {
 		String type = entity.getString(TrayKeyConstants.ITEM_TYPE);
 		String cmd = entity.getString(TrayKeyConstants.ITEM_COMMAND);
 		Element entryItem = new Element(TrayKeyConstants.ENTRY_NM);
-		entryItem.setAttribute(TrayKeyConstants.ENTRY_ATTR_ID, TrayUtils.UUID());
-		entryItem.addContent(new Element(TrayKeyConstants.ITEM_NAME).addContent(entity.getString(TrayKeyConstants.ITEM_NAME)));
+		
+		String trayId =entity.getString(TrayKeyConstants.ENTRY_ATTR_ID,"");
+		if("".equals(trayId)){
+			trayId =TrayUtils.UUID();
+			entity.put(TrayKeyConstants.ENTRY_ATTR_ID, trayId);
+		}
+		entryItem.setAttribute(TrayKeyConstants.ENTRY_ATTR_ID, trayId);
+		entryItem.addContent(new Element(TrayKeyConstants.ITEM_NAME).addContent(new CDATA(entity.getString(TrayKeyConstants.ITEM_NAME))));
 		entryItem.addContent(new Element(TrayKeyConstants.ITEM_TYPE).setText(type));
 		entryItem.addContent(new Element(TrayKeyConstants.ITEM_COMMAND).addContent(new CDATA(cmd)));
 		
