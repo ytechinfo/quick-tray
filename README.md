@@ -1,12 +1,11 @@
 퀵트레이
 
+[quickTray64]: https://github.com/ytechinfo/quick-tray/releases/download/1.0/quickTray64.zip "quick tray download"
 
 참고 url : http://qmffjem09.tistory.com/entry/%ED%80%B5-%ED%8A%B8%EB%A0%88%EC%9D%B4Quick-tray
 자주 사용하는 링크나 어플리케이션을 
 
 트레이에 저장하여 놓고 사용하는 java 응용프로그램이다. 
-
-
 
 위에 사진에 있는 작은 아이콘을 트레이라고 한다. 
 
