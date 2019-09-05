@@ -1,6 +1,6 @@
 ## 퀵트레이
 
-[quickTray64][quickTray64link][quickTray64link] : https://github.com/ytechinfo/quick-tray/releases/download/1.0/quickTray64.zip "quick tray download"
+[quickTray64] : https://github.com/ytechinfo/quick-tray/releases/download/1.0/quickTray64.zip "quick tray download"
 
 
 참고 url : http://qmffjem09.tistory.com/entry/%ED%80%B5-%ED%8A%B8%EB%A0%88%EC%9D%B4Quick-tray
